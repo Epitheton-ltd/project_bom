@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<!-- This file is part of Tryton.  The COPYRIGHT file at the top level of
+this repository contains the full copyright notices and license terms.
+
+TODO@mzimen: Adding PROJECT views for BOM
+
+-->
+<tryton>
+    <!--data depends="production.bom">
+        <record model="ir.ui.view" id="bomline_view_form">
+            <field name="model">production.bom</field>
+            <field name="inherit" ref="production.bom_line_view_form"/>
+            <field name="name">bom_line_form</field>
+        </record>
+    </data-->
+</tryton>

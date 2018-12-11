@@ -1,0 +1,45 @@
+#
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+#, fuzzy
+msgctxt "field:project.work,boms:"
+msgid "BOMs"
+msgstr "BOMs"
+
+#, fuzzy
+msgctxt "field:project.work.bom,bom:"
+msgid "BOM"
+msgstr "BOM"
+
+msgctxt "field:project.work.bom,create_date:"
+msgid "Create Date"
+msgstr ""
+
+msgctxt "field:project.work.bom,create_uid:"
+msgid "Create User"
+msgstr ""
+
+msgctxt "field:project.work.bom,id:"
+msgid "ID"
+msgstr ""
+
+msgctxt "field:project.work.bom,rec_name:"
+msgid "Record Name"
+msgstr ""
+
+msgctxt "field:project.work.bom,work:"
+msgid "Project"
+msgstr ""
+
+msgctxt "field:project.work.bom,write_date:"
+msgid "Write Date"
+msgstr ""
+
+msgctxt "field:project.work.bom,write_uid:"
+msgid "Write User"
+msgstr ""
+
+msgctxt "model:project.work.bom,name:"
+msgid "Relation between Project and BOMs"
+msgstr ""

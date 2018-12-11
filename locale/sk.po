@@ -1,0 +1,43 @@
+#
+msgid ""
+msgstr "Content-Type: text/plain; charset=utf-8\n"
+
+msgctxt "field:project.work,boms:"
+msgid "BOMs"
+msgstr ""
+
+msgctxt "field:project.work.bom,bom:"
+msgid "BOM"
+msgstr ""
+
+msgctxt "field:project.work.bom,create_date:"
+msgid "Create Date"
+msgstr "Dátum vytvorenia"
+
+msgctxt "field:project.work.bom,create_uid:"
+msgid "Create User"
+msgstr "Vytvorené používateľom"
+
+msgctxt "field:project.work.bom,id:"
+msgid "ID"
+msgstr ""
+
+msgctxt "field:project.work.bom,rec_name:"
+msgid "Record Name"
+msgstr "Názov záznamu"
+
+msgctxt "field:project.work.bom,work:"
+msgid "Project"
+msgstr "Projekt"
+
+msgctxt "field:project.work.bom,write_date:"
+msgid "Write Date"
+msgstr "Dátum zmeny"
+
+msgctxt "field:project.work.bom,write_uid:"
+msgid "Write User"
+msgstr "Zmenené používateľom"
+
+msgctxt "model:project.work.bom,name:"
+msgid "Relation between Project and BOMs"
+msgstr "Vzťah medzi projektom a BOMs"
