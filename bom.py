@@ -20,7 +20,7 @@ from trytond.modules.product import price_digits
  Author:    mzimen@epitheton.com
 """
 
-__all__ = ['Bom']
+__all__ = ['BOM']
 
 class BOM(metaclass=PoolMeta):
     __name__ = 'production.bom'

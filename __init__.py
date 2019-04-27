@@ -10,7 +10,16 @@ from . import bom
 def register():
     Pool.register(
         work.Work,
-        module='project_bom', type_='model')
+        module='project_bom', type_='model',
+        depends=['production'])
+    Pool.register(
+        work.WorkPurchaseRequest,
+        module='project_bom', type_='model',
+        depends=['purchase_request',])
+    Pool.register(
+        work.WorkPurchase,
+        module='project_bom', type_='model',
+        depends=['purchase',])
     Pool.register(
         work.WorkBOM,
         module='project_bom', type_='model',
@@ -19,3 +28,7 @@ def register():
         bom.BOM,
         module='project_bom', type_='model',
         depends=['production', 'purchase_request',])
+    Pool.register(
+        work.WorkProduction,
+        module='project_bom', type_='model',
+        depends=['production',])
