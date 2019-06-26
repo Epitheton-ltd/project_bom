@@ -112,8 +112,13 @@ class Work(metaclass=PoolMeta):
         return x
 
     def product_purchase(self, product, quantity=None) -> 'purchase':
+        '''
+        Get the list of purchase per product
+        '''
         for purchase in self.purchases:
             for line in purchase.lines:
+                if not line.product:
+                    continue
                 if line.product.id == product.id:
                     if quantity:  # checking also for quantity
                         if line.quantity == quantity:
@@ -123,8 +128,13 @@ class Work(metaclass=PoolMeta):
         return None
 
     def product_supplier(self, product, quantity=None) -> 'purchase.party':
+        '''
+        Get the list of purchase party per product
+        '''
         for purchase in self.purchases:
             for line in purchase.lines:
+                if not line.product:
+                    continue   # FIXME@mzimen!!!!
                 if line.product.id == product.id:
                     if quantity:  # checking also for quantity
                         if line.quantity == quantity:
@@ -139,6 +149,8 @@ class Work(metaclass=PoolMeta):
         '''
         for purchase in self.purchases:
             for line in purchase.lines:
+                if not line.product:  #FIXME@mzimen: (temporarily workaround due to
+                    continue
                 if line.product.id == product.id:
                     if quantity:  # checking also for quantity
                         if line.quantity == quantity:
@@ -154,7 +166,21 @@ class Work(metaclass=PoolMeta):
                     yield p
 
     def total_product_cost(self) -> float:
-        return round(sum([p for p in self.all_purchases_cost()]),2)
+        return round(sum([p for p in self.all_purchases_cost()]), 2)
+
+    def get_today_hours(self) -> float:
+        for tw in self.timesheet_works:
+            for tl in tw.timesheet_lines:
+                if tl.date == date.today():
+                    return tl.duration.total_seconds() / 3600
+        return 0
+
+    def total_hours(self) -> float:
+        total = 0
+        for tw in self.timesheet_works:
+            for tl in tw.timesheet_lines:
+                total += tl.duration.total_seconds()
+        return round(total/3600, 2)
 
     def amount_of_missing_products(self) -> int:
         return len([p for p in self.all_missing_products()])
