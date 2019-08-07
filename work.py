@@ -100,8 +100,9 @@ class Work(metaclass=PoolMeta):
     def all_products(self, filter=None) -> tuple:
         ''' generator over all products via productions '''
         for production in self.productions:
-            for _ in production.bom.inputs:
-                yield _.product, _.quantity, production.bom.id, production.id
+            if production.bom:
+                for _ in production.bom.inputs:
+                    yield _.product, _.quantity, production.bom.id, production.id
 
     def all_purchases_cost(self, filter=None) -> tuple:
         ''' generator over all products via productions '''
@@ -161,9 +162,10 @@ class Work(metaclass=PoolMeta):
 
     def get_missing_orders(self) -> 'product.product':
         for p in self.productions:
-            for p in p.bom.inputs:
-                if p.product in self.all_missing_products():
-                    yield p
+            if p.bom:
+                for p in p.bom.inputs:
+                    if p.product in self.all_missing_products():
+                        yield p
 
     def total_product_cost(self) -> float:
         return round(sum([p for p in self.all_purchases_cost()]), 2)
