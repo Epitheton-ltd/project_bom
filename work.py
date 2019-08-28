@@ -79,12 +79,23 @@ class Work(metaclass=PoolMeta):
                 return True
         return False
 
+    def all_missing_orders(self) -> 'product.product':
+        """ Generator over all products missing in stock """
+        for pr in self.purchase_requests:
+            if pr.state in ('processing', 'done'):
+                continue
+            elif pr.purchase and pr.purchase.state == 'done':
+                continue
+            yield pr.product
+
     def all_missing_products(self) -> 'product.product':
-        """ generator over all products """
-        for bom in self.boms:
-            for _ in bom.inputs:
-                if _.product not in self.ordered_products():
-                    yield _.product
+        """ Generator over all products missing in stock """
+        for pr in self.purchase_requests:
+            if pr.state == 'done':
+                continue
+            elif pr.purchase and pr.purchase.state == 'done':
+                continue
+            yield pr.product
 
     def quoting_products(self):
         """ generator over all products """
@@ -94,16 +105,24 @@ class Work(metaclass=PoolMeta):
                     yield _.product
 
     def purchased_products(self):
-        """ generator over all products """
+        """ Generator over all purchased products """
         for p in self.purchases:
-            if p.state in ('done',):
+            if p.state in ('purchased', 'processing'):
                 for _ in p.lines:
                     yield _.product
+
+    def delivered_products(self) -> 'product.product':
+        """ Generator over all delivered products """
+        for pr in self.purchase_requests:
+            if pr.state == 'done':
+                yield pr.product
+            elif pr.purchase and pr.purchase.state == 'done':
+                yield pr.product
 
     def ordered_products(self):
         """ generator over all products """
         for p in self.purchases:
-            if p.state in ('confirmed', 'processing'):
+            if p.state in ('done', 'processing'):
                 for _ in p.lines:
                     yield _.product
 
@@ -170,12 +189,13 @@ class Work(metaclass=PoolMeta):
                         return purchase.delivery_date
         return None
 
-    def get_missing_orders(self) -> 'product.product':
-        for p in self.productions:
-            if p.bom:
-                for p in p.bom.inputs:
-                    if p.product in self.all_missing_products():
-                        yield p
+    def get_missing_orders(self) -> 'purchase.purchase_request':
+        for pr in self.purchase_requests:
+            if pr.state == 'done':
+                continue
+            elif pr.purchase and pr.purchase.state == 'done':
+                continue
+            yield pr
 
     def total_product_cost(self) -> float:
         return round(sum([p for p in self.all_purchases_cost()]), 2)
@@ -194,9 +214,13 @@ class Work(metaclass=PoolMeta):
                 total += tl.duration.total_seconds()
         return round(total/3600, 2)
 
+    #@property
     def amount_of_missing_products(self) -> int:
         return len([p for p in self.all_missing_products()])
-    amount_of_missing_purchase_requests = amount_of_missing_products
+
+    #@property
+    def amount_of_missing_orders(self) -> int:
+        return len([p for p in self.all_missing_orders()])
 
     def create_purchase_requests_from_bom(self, boms):
         'This task should be run from scheduler'
