@@ -1,3 +1,16 @@
+"""
+class Book:
+    __name__ = 'library.book'
+    renter = fields.Many2One('party.party',
+                             'Renter',
+                             required=False)
+
+class User:
+    __name__ = 'party.party'
+    rented_books = fields.One2Many('library.book',
+                                   'renter',
+                                   'Rented Books')
+"""
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
 from decimal import Decimal
@@ -15,36 +28,33 @@ from trytond.transaction import Transaction
 from trytond.pool import Pool, PoolMeta
 from trytond.tools import reduce_ids, grouped_slice
 
-
 __all__ = ['Work', 'WorkBOM', 'WorkPurchase', 'WorkPurchaseRequest']
 
 
 class Work(metaclass=PoolMeta):
 
     __name__ = 'project.work'
-    purchase_requests = fields.Many2Many(
-        'project.work.purchase_request',  # relation-name -> ref to WorKBOM
-        'work',  # origin
-        'purchase_request',  # target
-        'PurchaseRequests'
+    purchase_requests = fields.One2Many(
+        model_name='purchase.request',
+        field='project',
+        string='Purchase Requests'
     )
-    purchases = fields.Many2Many(
-        'project.work.purchase',  # relation-name -> ref to WorkPurchase
-        'work',  # origin
-        'purchase',  # target
-        'Purchases'
+    purchases = fields.One2Many(
+        model_name='purchase.purchase',
+        field='project',
+        string='Purchases'
     )
     boms = fields.Many2Many(
-        'project.work.bom',  # relation-name -> ref to WorkBOM
-        'work',  # origin
-        'bom',  # target
-        'BOMs'
+        relation_name='project.work.bom',
+        origin='work',
+        target='bom',
+        string='BOMs'
     )
     productions = fields.Many2Many(
-        'project.work.production',  # relation-name -> ref to WorkProduction
-        'work',  # origin
-        'production',  # target
-        'Productions'
+        relation_name='project.work.production',
+        origin='work',  # origin
+        target='production',  # target
+        string='Productions'
     )
 
     assembly_date = fields.Function(fields.Date('Assembly Date'), 'get_assembly_date')
@@ -70,42 +80,42 @@ class Work(metaclass=PoolMeta):
         return False
 
     def all_missing_products(self) -> 'product.product':
-        ''' generator over all products '''
+        """ generator over all products """
         for bom in self.boms:
             for _ in bom.inputs:
                 if _.product not in self.ordered_products():
                     yield _.product
 
     def quoting_products(self):
-        ''' generator over all products '''
+        """ generator over all products """
         for p in self.purchases:
             if p.state in ('quotation',):
                 for _ in p.lines:
                     yield _.product
 
     def purchased_products(self):
-        ''' generator over all products '''
+        """ generator over all products """
         for p in self.purchases:
             if p.state in ('done',):
                 for _ in p.lines:
                     yield _.product
 
     def ordered_products(self):
-        ''' generator over all products '''
+        """ generator over all products """
         for p in self.purchases:
             if p.state in ('confirmed', 'processing'):
                 for _ in p.lines:
                     yield _.product
 
     def all_products(self, filter=None) -> tuple:
-        ''' generator over all products via productions '''
+        """ generator over all products via productions """
         for production in self.productions:
             if production.bom:
                 for _ in production.bom.inputs:
                     yield _.product, _.quantity, production.bom.id, production.id
 
     def all_purchases_cost(self, filter=None) -> tuple:
-        ''' generator over all products via productions '''
+        """ generator over all products via productions """
         x = []
         for purchase in self.purchases:
             for line in purchase.lines:
@@ -113,9 +123,9 @@ class Work(metaclass=PoolMeta):
         return x
 
     def product_purchase(self, product, quantity=None) -> 'purchase':
-        '''
+        """
         Get the list of purchase per product
-        '''
+        """
         for purchase in self.purchases:
             for line in purchase.lines:
                 if not line.product:
@@ -129,9 +139,9 @@ class Work(metaclass=PoolMeta):
         return None
 
     def product_supplier(self, product, quantity=None) -> 'purchase.party':
-        '''
+        """
         Get the list of purchase party per product
-        '''
+        """
         for purchase in self.purchases:
             for line in purchase.lines:
                 if not line.product:
@@ -145,9 +155,9 @@ class Work(metaclass=PoolMeta):
         return None
 
     def product_delivery_date(self, product, quantity=None) -> date:
-        '''
+        """
         delivery_date for particular product
-        '''
+        """
         for purchase in self.purchases:
             for line in purchase.lines:
                 if not line.product:  #FIXME@mzimen: (temporarily workaround due to
@@ -186,6 +196,7 @@ class Work(metaclass=PoolMeta):
 
     def amount_of_missing_products(self) -> int:
         return len([p for p in self.all_missing_products()])
+    amount_of_missing_purchase_requests = amount_of_missing_products
 
     def create_purchase_requests_from_bom(self, boms):
         'This task should be run from scheduler'
@@ -193,24 +204,8 @@ class Work(metaclass=PoolMeta):
         create_pr.execute('create_')
 
 
-class WorkPurchaseRequest(ModelSQL):
-    ''' Relation between Project and BOMs '''
-    __name__ = 'project.work.purchase_request'
-
-    work = fields.Many2One('project.work', 'Project')
-    purchase_request = fields.Many2One('purchase.request', 'PurchaseRequest')
-
-
-class WorkPurchase(ModelSQL):
-    ''' Relation between Project and Purchase '''
-    __name__ = 'project.work.purchase'
-
-    work = fields.Many2One('project.work', 'Project')
-    purchase = fields.Many2One('purchase.purchase', 'Purchase')
-
-
 class WorkBOM(ModelSQL):
-    ''' Relation between Project and BOMs '''
+    """ Relation between Project and BOMs """
     __name__ = 'project.work.bom'
 
     work = fields.Many2One('project.work', 'Project')
@@ -218,10 +213,10 @@ class WorkBOM(ModelSQL):
 
 
 class WorkProduction(ModelSQL):
-    '''
+    """
         Relation between Project and Production
         One project can have multiple (unique) productions
-    '''
+    """
     __name__ = 'project.work.production'
 
     work = fields.Many2One('project.work', 'Project')
