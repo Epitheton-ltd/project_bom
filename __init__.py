@@ -25,6 +25,7 @@ def register():
     Pool.register(
         purchase.PurchaseRequest,
         purchase.Purchase,
+        purchase.ProductSupplier,
         module='project_bom',
         type_='model',
         depends=['purchase', 'purchase_request']

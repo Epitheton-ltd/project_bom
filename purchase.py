@@ -16,7 +16,7 @@ from trytond.pool import Pool, PoolMeta
 from trytond.tools import reduce_ids, grouped_slice
 
 
-__all__ = ['PurchaseRequestProject', 'PurchaseProject']
+__all__ = ['PurchaseRequestProject', 'PurchaseProject', 'ProductSupplier']
 
 class PurchaseRequest(metaclass=PoolMeta):
     """
@@ -42,3 +42,10 @@ class Purchase(metaclass=PoolMeta):
         'Project',
         required=False,
     )
+
+
+class ProductSupplier(ModelSQL):
+    __name__ = 'purchase.product_supplier'
+
+    order_url = fields.Char('OrderUrl', size=None, translate=True, select=True)
+
