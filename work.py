@@ -34,6 +34,7 @@ __all__ = ['Work', 'WorkBOM', 'WorkPurchase', 'WorkPurchaseRequest']
 class Work(metaclass=PoolMeta):
 
     __name__ = 'project.work'
+    code = fields.Char('Code', help='The other number assigned to the project.')
     purchase_requests = fields.One2Many(
         model_name='purchase.request',
         field='project',
