@@ -13,6 +13,7 @@ class User:
 """
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
+from typing import Iterable
 from decimal import Decimal
 from collections import defaultdict
 from datetime import date
@@ -80,13 +81,22 @@ class Work(metaclass=PoolMeta):
                 return True
         return False
 
-    def all_missing_orders(self) -> 'product.product':
+    def all_waiting_orders(self) -> Iterable['product.product']:
+        """ Generator over all purchases waiting for delivery """
+        for pr in self.purchase_requests:
+
+            if pr.state in ('purchased',):
+                yield.pr.product
+
+    def all_missing_orders(self) -> Iterable['product.product']:
         """ Generator over all products missing in stock """
         for pr in self.purchase_requests:
-            if pr.state in ('processing', 'done'):
+
+            if pr.state in ('processing', 'done', 'purchased'):
                 continue
-            elif pr.purchase and pr.purchase.state == 'done':
+            elif pr.purchase and pr.purchase.state in ('purchased', 'done'):
                 continue
+
             yield pr.product
 
     def all_missing_products(self) -> 'product.product':
@@ -219,7 +229,7 @@ class Work(metaclass=PoolMeta):
     def amount_of_missing_products(self) -> int:
         return len([p for p in self.all_missing_products()])
 
-    #@property
+    @property
     def amount_of_missing_orders(self) -> int:
         return len([p for p in self.all_missing_orders()])
 
