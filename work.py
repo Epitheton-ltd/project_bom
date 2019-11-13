@@ -13,7 +13,7 @@ class User:
 """
 # This file is part of Tryton.  The COPYRIGHT file at the top level of
 # this repository contains the full copyright notices and license terms.
-from typing import Iterable
+from typing import Iterable, Tuple
 from decimal import Decimal
 from collections import defaultdict
 from datetime import date
@@ -86,7 +86,7 @@ class Work(metaclass=PoolMeta):
         for pr in self.purchase_requests:
 
             if pr.state in ('purchased',):
-                yield.pr.product
+                yield pr.product
 
     def all_missing_orders(self) -> Iterable['product.product']:
         """ Generator over all products missing in stock """
@@ -99,43 +99,44 @@ class Work(metaclass=PoolMeta):
 
             yield pr.product
 
-    def all_missing_products(self) -> 'product.product':
+    def all_missing_products(self) -> Iterable['product.product']:
         """ Generator over all products missing in stock """
         for pr in self.purchase_requests:
             if pr.state == 'done':
                 continue
             elif pr.purchase and pr.purchase.state == 'done':
                 continue
+
             yield pr.product
 
-    def quoting_products(self):
-        """ generator over all products """
+    def quoting_products(self) -> Iterable[Tuple['product.product',float]]:
+        """ Generator over all products """
         for p in self.purchases:
             if p.state in ('quotation',):
                 for _ in p.lines:
-                    yield _.product
+                    yield _.product,_.quantity
 
     def purchased_products(self):
         """ Generator over all purchased products """
         for p in self.purchases:
             if p.state in ('purchased', 'processing'):
                 for _ in p.lines:
-                    yield _.product
+                    yield _.product, _.quantity
 
-    def delivered_products(self) -> 'product.product':
+    def delivered_products(self) -> Iterable[Tuple['product.product', float]]:
         """ Generator over all delivered products """
         for pr in self.purchase_requests:
             if pr.state == 'done':
-                yield pr.product
+                yield pr.product, pr.lines[0].quantity
             elif pr.purchase and pr.purchase.state == 'done':
-                yield pr.product
+                yield pr.product, pr.lines[0].quantity
 
-    def ordered_products(self):
+    def ordered_products(self) -> Iterable[Tuple['product', float]]:
         """ generator over all products """
         for p in self.purchases:
             if p.state in ('done', 'processing'):
                 for _ in p.lines:
-                    yield _.product
+                    yield _.product, _.quantity
 
     def all_products(self, filter=None) -> tuple:
         """ generator over all products via productions """
@@ -225,13 +226,17 @@ class Work(metaclass=PoolMeta):
                 total += tl.duration.total_seconds()
         return round(total/3600, 2)
 
-    #@property
+    @property
     def amount_of_missing_products(self) -> int:
         return len([p for p in self.all_missing_products()])
 
     @property
     def amount_of_missing_orders(self) -> int:
         return len([p for p in self.all_missing_orders()])
+
+    @property
+    def amount_of_waiting_purchases(self) -> int:
+        return len([p for p in self.all_waiting_orders()])
 
     def create_purchase_requests_from_bom(self, boms):
         'This task should be run from scheduler'
